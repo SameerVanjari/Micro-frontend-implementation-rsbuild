@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MessageSquare, Send, User } from "lucide-react";
 import "./App.css";
 
@@ -8,6 +8,13 @@ interface Message {
   timestamp: Date;
   sender: string;
 }
+
+type Cat = {
+  id: string;
+  tags: string[];
+  mimetype: string;
+  createdAt: string;
+};
 
 function App() {
   const [messages, setMessages] = useState<Message[]>([
@@ -32,6 +39,7 @@ function App() {
   ]);
   const [newMessage, setNewMessage] = useState("");
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+  const [cats, setCats] = useState<Cat[]>([]);
 
   const handleSendMessage = () => {
     if (newMessage.trim()) {
@@ -45,6 +53,19 @@ function App() {
       setNewMessage("");
     }
   };
+
+  useEffect(() => {
+    const getCats = async () => {
+      const response = await fetch(
+        "https://cataas.com/api/cats?limit=10&tags=orange"
+      )
+        .then((res) => res.json())
+        .catch((err) => err.message);
+
+      setCats(response);
+    };
+    getCats();
+  }, []);
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -114,9 +135,18 @@ function App() {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-gray-500">
-            Select a message to view the conversation
-          </div>
+          <>
+            <div className="flex-1 columns-[2] gap-3 text-gray-500">
+              {cats.map((cat) => (
+                <img
+                  src={`https://cataas.com/cat/${cat.id}`}
+                  alt="cat photo"
+                  loading="lazy"
+                  className="rounded-lg mt-3 w-full"
+                />
+              ))}
+            </div>
+          </>
         )}
 
         {/* Message Input */}
